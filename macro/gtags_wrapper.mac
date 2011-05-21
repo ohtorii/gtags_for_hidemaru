@@ -1,32 +1,13 @@
-/*gtags のラッパー（オマケ）
+/*gtags のラッパー
 
-ダイアログ上から下記2項目を指定してＯＫボタンを押すと、tagsファイルを生成します。
-    ・tagsファイルを生成するディレクトリ
-    ・オプション
-
-コマンドラインから起動するよりも多少便利かと思います。
-
-【動作環境】
-秀丸 ver8以降
-でんがくDLL
-
-【連絡先】
-http://d.hatena.ne.jp/ohtorii/
+更新履歴
+2011/05/14 キャンセルボタンを押すと秀丸がハングする不具合を修正。
 */
 
 $dengaku_dll = hidemarudir + "\\DengakuDLL.dll";
 //(.ini)のファイル名
 $g_ini_filename = "gtags_config.ini";
 
-
-
-
-
-
-
-////////////////////////////////////////////////////////////////////////////
-//	以下、内部処理
-////////////////////////////////////////////////////////////////////////////
 //gtags.exe へのパス。(.ini)ファイルを解析後に設定される。
 $g_exe_global 	= "";
 
@@ -97,6 +78,7 @@ run_gtags:
 	}
 
 	if ($$item == "0") {
+		##n = dllfunc("ENDDIALOG");
 		return false;
 	}
 
@@ -113,16 +95,16 @@ run_gtags:
 		message $$SelectDir + "への移動に失敗しました";
 		return false;
 	}
-
+	
 	$$run_str = "\""+ $g_exe_global + "\" " + $$SetParam;
 	##n = dllfunc("RUN", $$run_str);
-
+	
 	##tmp_ret = dllfunc("SETCURDIR", $$cur_dir);
 	if (##n == 0) {
 		message "gtags.exeの起動に失敗しました";
 		return false;
 	}
-
+	
 	$$abs_filename = currentmacrodirectory + "\\" + $g_ini_filename;
 	writeinistr $$abs_filename, "Dialog", "dir", $$SelectDir;
 	writeinistr $$abs_filename, "Dialog", "arg", $$SetParam;
