@@ -1,0 +1,150 @@
+/*gtags のラッパー（オマケ）
+
+ダイアログ上から下記2項目を指定してＯＫボタンを押すと、tagsファイルを生成します。
+    ・tagsファイルを生成するディレクトリ
+    ・オプション
+
+コマンドラインから起動するよりも多少便利かと思います。
+
+【動作環境】
+秀丸 ver8以降
+でんがくDLL
+
+【連絡先】
+http://d.hatena.ne.jp/ohtorii/
+*/
+
+$dengaku_dll = hidemarudir + "\\DengakuDLL.dll";
+//(.ini)のファイル名
+$g_ini_filename = "gtags_config.ini";
+
+
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////
+//	以下、内部処理
+////////////////////////////////////////////////////////////////////////////
+//gtags.exe へのパス。(.ini)ファイルを解析後に設定される。
+$g_exe_global 	= "";
+
+//gtagsの対象となるディレクトリ(directory2=デフォルト値)
+$g_param_dir		= directory2;
+
+//gtagsの引数
+$g_param_arg		= "-v";
+
+
+
+call Main;
+endmacro;
+
+
+Main:
+	call proc_gtag_ini;
+	if(! ##return){
+		return false;
+	}
+
+	loaddll $dengaku_dll;
+	if (!result) {
+		message "田楽DLLのロードに失敗しました\n"
+		      + "DengakuDLL.dllが秀丸のディレクトリに存在するか確認してください";
+		return false;
+	}
+	call run_gtags;
+	##result = ##return;
+	freedll;
+	return ##result;
+
+
+run_gtags:
+	// ダイアログの作成
+	if (dllfunc("NEWDIALOG", "[GTAGS] タグファイルの作成", 100) == 0 ||
+		dllfunc("NEWCONTROL", "text", "", "フォルダ") == 0 ||
+		dllfunc("SETCTRLWIDTH", "", 8) == 0 ||
+		dllfunc("NEWCONTROL", "edit", "CTagsDlg@Dir", $g_param_dir) == 0 ||
+		dllfunc("SETCTRLWIDTH", "", 80) == 0 ||
+		dllfunc("NEWCONTROL", "refdirbutton", "CTagsDlg@Ref", "") == 0 ||
+		dllfunc("SETCTRLITEM", "", "フォルダの選択, \"\", 0") == 0 ||
+		dllfunc("SETCTRLNOTIFY", "", "10") == 0 ||
+		dllfunc("NEWCONTROL", "text", "", "引数") == 0 ||
+		dllfunc("SETCTRLWIDTH", "", 8) == 0 ||
+		dllfunc("NEWCONTROL", "edit", "CTagsDlg@Param", $g_param_arg) == 0 ||
+		dllfunc("NEWCONTROL", "okcancel", "CTagsDlg@OkCancel", "") == 0) {
+		message "ダイアログの作成に失敗しました\n";
+		return false;
+	}
+
+	// ダイアログの表示
+	##n = dllfunc("SHOWDIALOG", 0, 0);
+	while (1) {
+		$$item = "";
+		while ($$item == "") {
+			 $$item = dllfuncstr("WAITCTRLNOTIFY",10);
+		}
+		if ($$item == "0") {
+			break;
+		}
+		else if ($$item == "1") {
+			break;
+		}
+		else if ($$item == "10") {	// 参照ボタン
+			##n = dllfunc("SETCTRLSTRING", "CTagsDlg@Dir", dllfuncstr("GETCTRLSTRING", "CTagsDlg@Ref"));
+		}
+	}
+
+	if ($$item == "0") {
+		return false;
+	}
+
+	$$SelectDir = dllfuncstr("GETCTRLSTRING", "CTagsDlg@Dir");
+	$$SetParam = dllfuncstr("GETCTRLSTRING", "CTagsDlg@Param");
+	##n = dllfunc("ENDDIALOG");
+
+	// gtagsの実行
+
+	// カレントディレクトリをタグファイルを作成するフォルダに移動
+	$$cur_dir =  dllfuncstr("GETCURDIR");
+	##n = dllfunc("SETCURDIR", $$SelectDir);
+	if (!##n) {
+		message $$SelectDir + "への移動に失敗しました";
+		return false;
+	}
+
+	$$run_str = "\""+ $g_exe_global + "\" " + $$SetParam;
+	##n = dllfunc("RUN", $$run_str);
+
+	##tmp_ret = dllfunc("SETCURDIR", $$cur_dir);
+	if (##n == 0) {
+		message "gtags.exeの起動に失敗しました";
+		return false;
+	}
+
+	$$abs_filename = currentmacrodirectory + "\\" + $g_ini_filename;
+	writeinistr $$abs_filename, "Dialog", "dir", $$SelectDir;
+	writeinistr $$abs_filename, "Dialog", "arg", $$SetParam;
+	return ;
+
+
+proc_gtag_ini:
+	$$abs_filename = currentmacrodirectory + "\\" + $g_ini_filename;
+	if(! existfile($$abs_filename)){
+		message($$abs_filename + " が見つかりません");
+		return false;
+	}
+
+	$g_exe_global = getinistr($$abs_filename, "Path", "gtags");
+	if(! existfile($g_exe_global)){
+		message($g_ini_filename + " の解析エラー\n" +
+				" [Path]->gtags が見つからないか、gtagsのexeが見つかりません\n" +
+				"exeの名前 : " + $g_exe_global
+		);
+		return false;
+	}
+
+	$g_param_dir = getinistr($$abs_filename, "Dialog", "dir");
+	$g_param_arg = getinistr($$abs_filename, "Dialog", "arg");
+	return true;

@@ -1,0 +1,504 @@
+/* GNU GLOBAL を秀丸で使用するためのマクロ
+
+C/C++で「関数が呼ばれている位置」を一覧表示することが出来ます。
+    ctags       関数が定義されている位置。
+    GNU GLOBAL  関数が呼ばれている位置。
+
+「手風琴さんのCTagsJumpをメインで使いつつ、本マクロをサブで使用」という使い方
+を想定しています。
+
+
+
+【このマクロの特徴】
+・メニューからglobalの動作を選択します、globalの動作を1つずつ確認できます。
+  なので、「これは必要ないだろう？」と思われるメニューもあります。
+・検索結果は秀丸のgrepと同じ形式で出力します。
+
+【動作環境】
+秀丸 ver8以降
+でんがくDLL
+
+【ファイル構成】
+gtags_jump.mac      マクロ本体
+gtags_wrapper.mac   おまけマクロ
+gtags_config.ini    設定ファイル
+
+【インストール】
+全ファイルを秀丸のスクリプトディレクトリにコピーしてください。
+
+【つかってみる】
+＊GNU GLOBALのインストール
+    ・Cygwinをお使いならいつもの手順でインストールしてください。
+    ・win32バイナリの配布元
+      http://adoxa.110mb.com/global/index.html
+
+    GNU GLOBALがコマンドライン上から動けばＯＫです。
+
+＊gtags_config.iniの設定
+    ・GNU GLOBALへのパスを設定します。
+        (例)
+        >global=C:\glo593wb\bin\global.exe
+        >gtags=C:\glo593wb\bin\gtags.exe
+
+        環境変数PATHに追加するのを忘れないでください。追加しておかないと実行
+        ファイルが見つからずマクロが動きません。
+
+＊gtagファイルの生成
+    コマンドラインからgtagsコマンドで生成できますが、ここではダイアログ上か
+    ら設定を行える便利マクロを使用します。
+    秀丸の「マクロ実行」から gtags_wrapper.mac を起動してください。
+
+    例えば、ソースコードの構成が以下の時構成だと
+        my_app
+        ├─inc
+        ├─src
+        └─doc
+
+    ダイアログ上の「フォルダ」にはmy_appを指定してください。
+    「ＯＫボタン」を押して、下記3ファイルが生成されると成功です。
+        GPATH
+        GRTAGS
+        GTAGS
+
+    どうしてもうまくできないときは、gtagsをコマンドラインから起動して確認し
+    てください。
+    そもそもコマンドライン上で正しく動かないものが、秀丸マクロ上で動くはずあ
+    りません。
+
+＊関数の呼び出し元を探す
+    適当な関数の上にカーソルキーを置いて gtags_jump.mac を起動します。
+    検索結果が一覧表示されるはずです。
+
+    お疲れ様でした。
+
+
+【複数パス、複数ドライブからの検索】
+    gtags_config.iniのSearchセクションを編集してください。
+
+    開発中のアプリとライブラリが別ドライブにあるときに使うと便利です。
+
+
+【既知の問題】
+convert_hidemaru_format関数 が日本語のファイル名に対応していない。
+（そのうち対応する）
+
+【連絡先】
+http://d.hatena.ne.jp/ohtorii/
+*/
+
+
+//(.ini)のファイル名
+$g_ini_filename = "gtags_config.ini";
+
+//「でんがくDLL」へのパス
+$dengaku_dll = hidemarudir + "\\DengakuDLL.dll";
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//	メイン処理
+/////////////////////////////////////////////////////////////////////////////
+
+//テンポラリファイル名
+//環境変数TMPのディレクトリに生成する。
+$g_tmpfile_base_name = "hidemaru_gtag_tmp";
+
+//(.ini)ファイル [Search] セクションの最大Path数
+#g_search_path_max_num = 10;
+
+//カレントディレクトリを格納しているインデックス
+#g_search_path_current_index = 0;
+
+//gtags.exe へのパス。(.ini)ファイルを解析後に設定される。
+$g_exe_global 	= "";
+
+//タグが見つからないときのエラー文字列(全部小文字にしておく)
+$g_gtags_not_found = "global: gtags not found.";
+
+//処理中
+$g_title_str = "処理中・・・";
+
+
+
+$g_srBuf = searchbuffer;
+#g_srOpt = searchoption;
+call Main;
+setsearch $g_srBuf, #g_srOpt;
+endmacro;
+
+Main:
+	if(rectselecting){
+		return ;
+	}
+
+	call proc_gtag_ini;
+	if(! ##return){
+		return false;
+	}
+	call get_search_str;
+	$$search_str = $$return;
+	if(strlen($$search_str)){
+		$$search_str_menu = "【" + $$search_str + "】";
+	}else{
+		$$search_str_menu = "";
+	}
+
+	menu 	"呼び出し元を表示" 	+ $$search_str_menu
+			,"定義位置を表示" 	+ $$search_str_menu
+			,"シンボルを探す" 	+ $$search_str_menu
+			,"ファイルを探す"
+			,"grep" 			+ $$search_str_menu
+			,"このファイルに含まれる関数一覧を表示 【" + basename + "】"
+			,"関数名の一部から関数名を調べる(シェル向けの補完)"
+			,"コマンドラインの直接指定(デバッグ向け)"
+			;
+
+	if(0==result){
+		//pass
+	}else if(1==result){
+		//呼び出し元を表示
+		if(! strlen($$search_str)){
+			$$search_str = input("検索文字列を入力する");
+		}
+		call global_r $$search_str;
+	}else if(2==result){
+		//定義位置を表示
+		if(! strlen($$search_str)){
+			$$search_str = input("検索文字列を入力する");
+		}
+		call global $$search_str;
+	}else if(3==result){
+		//シンボルを探す
+		if(! strlen($$search_str)){
+			$$search_str = input("検索文字列を入力する");
+		}
+		call global_s $$search_str;
+	}else if(4==result){
+		//ファイルを探す
+		call global_p input("検索するファイル名の一部を入力する");
+	}else if(5==result){
+		//grep
+		if(! strlen($$search_str)){
+			$$search_str = input("grepする文字列を入力する");
+		}
+		call global_g $$search_str;
+	}else if(6==result){
+		//ファイルに含まれる関数一覧を表示
+		call global_f basename;
+	}else if(7==result){
+		//関数名の一部から関数名を調べる
+		//todo: 直前の検索文字列をiniから取り出す
+		call global_c input("検索する関数名の一部を入力する (シェル向け)");
+	}else if(8==result){
+		//コマンドラインの直接指定
+		call global_raw input("コマンドライン引数を直接指定します(Ex. --help)", "");
+	}
+
+	return true;
+
+
+
+//-f オプション
+//ファイルに含まれる関数一覧を取り出す。
+global_f:
+	$$in_filename = $$1;
+	call global_main "-f", $$in_filename, true, true;
+	return ##return;
+
+//関数が定義されているソースコード上の位置を調べる。
+//ctagと同等
+global:
+	$$in_function = $$1;
+	call global_main "-x", $$in_function, true, true;
+	return ##return;
+
+//-r オプション
+//関数が呼び出されている位置を調べる
+global_r:
+	$$in_function = $$1;
+	call global_main "-x -r", $$in_function, true, true;
+	return ##return;
+
+//-c オプション
+//関数名の一部から関数名を調べる。
+//ファイル名と行番号は出力されない、シェルの補完で使用するためのオプションらしい。
+global_c:
+	$$in_function = $$1;
+	call global_main "-c", $$in_function, false, true;
+	return ##return;
+
+//-g オプション
+//grep検索
+global_g:
+	$$in_find_str = $$1;
+	call global_main "-x -g", $$in_find_str, true, true;
+	return ##return;
+
+//-Pオプション
+//ファイルを探す
+global_p:
+	$$in_filename = $$1;
+	call global_main "-a -P", $$in_filename, false, true;
+	return ##return;
+
+//-s オプション
+//シンボルを探す
+global_s:
+	$$in_name = $$1;
+	call global_main "-x -s", $$in_name, true, true;
+	return ##return;
+
+global_main:
+	$$in_opt 		 	= " " + $$1 + " ";
+	$$in_name 			= $$2;
+	##replace_result 	= ##3;
+	##retry_other_tags	= ##4;
+
+	if(0 == strlen($$in_name)){
+		return false;
+	}
+	call global_raw $$in_opt + $$in_name, ##replace_result, ##retry_other_tags;
+	return ##return;
+
+
+global_raw:
+	$$cmd_arg 			= $$1;
+	##replace_result 	= ##2;
+	##retry_other_tags 	= ##3;
+
+	if(! strlen($$cmd_arg)){
+		return false;
+	}
+
+	call get_temp_file;
+	$$tmpfilename = $$return;
+	if(0==strlen($$tmpfilename)){
+		return false;
+	}
+
+	newfile;
+
+	if(##retry_other_tags){
+		loaddll $dengaku_dll;
+		if (!result) {
+			message "田楽DLLのロードに失敗しました\n"
+		    	  + "DengakuDLL.dllが秀丸のディレクトリに存在するか確認してください";
+			return false;
+		}
+	}
+
+	disabledraw;
+	begingroupundo;
+
+	title $g_title_str;
+
+	if(##retry_other_tags){
+		call retry_global $$tmpfilename, $$cmd_arg;
+	}else{
+		$$cmd = $g_exe_global + " " + $$cmd_arg + ">" + $$tmpfilename;
+		run $$cmd;
+		insertfile $$tmpfilename;
+	}
+
+	if(##replace_result){
+		title $g_title_str + "  整形中";
+		call convert_hidemaru_format;
+	}
+	clearupdated;
+
+	//カーソルの位置調整
+	//検索結果の1行が長いときにカーソルが画面右側にあり見づらいため。
+	golinetop;
+
+	endgroupundo;
+	enabledraw;
+
+	call del_temp_file $$tmpfilename;
+	return true;
+
+
+get_search_str:
+	##old_x = x;
+	##old_y = y;
+	##is_selecting = selecting;
+	if(! ##is_selecting){
+		selectword;
+	}
+	$$find_word = gettext2(seltopcolumn,seltoplineno,selendcolumn,selendlineno,true);
+	if(! ##is_selecting){
+		escape;
+		moveto ##old_x, ##old_y;
+	}
+	return $$find_word;
+
+/*
+タグの並び順を変換する
+
+＊gnu global
+	m_total  458 kernel.cpp   , m_total(0)
+
+＊秀丸
+	kernel.cpp(458):   , m_total(0)
+*/
+convert_hidemaru_format:
+	gofiletop;
+	$$reg1 = "^([_a-zA-Z0-9]+)[ ]+([0-9]+)[ ]+([:/!\"#$%&'.,_\\-\\+=~{}<>\\(\\)\\[\\]@a-zA-Z0-9]+)[ \t]+(.+)";
+	$$reg2 = "\\3(\\2): \\4";
+	replaceallfast $$reg1, $$reg2, nocasesense, regular, nohilight;
+
+	//GNU Global のエラーメッセージを消去する
+	gofiletop;
+	replaceallfast $g_gtags_not_found+"\\n", "", nocasesense, regular, nohilight;
+	gofileend;
+	return ;
+
+
+get_temp_file:
+	$$tempdir = getenv("tmp");
+	if( leftstr( $$tempdir, 1 ) != "\\" ) {
+		$$tempdir = $$tempdir + "\\";
+	}
+	##n=0;
+	while(##n<1000){
+	 	$$tempfile = $$tempdir + $g_tmpfile_base_name + str(##n);
+	 	if( !existfile( $$tempfile ) ) {
+			return $$tempfile;
+		}
+	 	##n = ##n + 1;
+	}
+	message "テンポラリファイルが作成できません\n" + $$tempfile;
+	return "";
+
+
+del_temp_file:
+	$$tmp_filename = $$1;
+
+	/*
+	削除するファイル名を念のため検査。
+	このような指定があるとまずいため
+		"c:\*.*"
+	*/
+	if(strlen($g_tmpfile_base_name) < strlen($$tmp_filename)){
+		run "cmd /c del \"" + $$tmp_filename + "\" >nul";
+	}
+
+
+proc_gtag_ini:
+	$$abs_filename = currentmacrodirectory + "\\" + $g_ini_filename;
+	if(! existfile($$abs_filename)){
+		message($$abs_filename + " が見つかりません");
+		return false;
+	}
+
+	$g_exe_global = getinistr($$abs_filename, "Path", "global");
+	if(! existfile($g_exe_global)){
+		message($g_ini_filename + " の解析エラー\n" +
+				" [Path]->gtags が見つからないか、gtagsのexeが見つかりません\n" +
+				"exeの名前 : " + $g_exe_global
+		);
+		return false;
+	}
+
+	//
+	//[Search]セクションからPath0..9を読み込む
+	//
+
+	//配列を作る
+	##index = 0;
+	while(##index <= #g_search_path_max_num){
+		$g_search_path[##index] = "";
+		##index = ##index + 1;
+	}
+	$g_search_path[#g_search_path_current_index] = directory3 + "\\";
+
+	##index = 0;
+	while(##index < #g_search_path_max_num){
+		$$Name 		= "Path" + str(##index);
+		$$PathStr 	= getinistr($$abs_filename, "Search", $$Name);
+		if(strlen($$PathStr)){
+			$g_search_path[1 + ##index] =  $$PathStr + "\\";
+		}
+		##index = ##index + 1;
+	}
+
+	return true;
+
+
+retry_global:
+	$$tmpfilename	= $$1;
+	$$cmd_arg 		= $$2;
+
+	//カレントディレクトリを変更するので、後で元に戻せるようにする。
+	$$cur_dir 			=  dllfuncstr("GETCURDIR");
+	##tags_dir_index 	= 0;
+
+	while(##tags_dir_index <= #g_search_path_max_num){
+		$$tags_dir = $g_search_path[##tags_dir_index];
+		title $g_title_str + "   " + str(##tags_dir_index) + "/" + str(#g_search_path_max_num) + "  " + $$tags_dir;
+
+		if(strlen($$tags_dir)){
+			if(##tags_dir_index == #g_search_path_current_index){
+				$$opt_abs_path = "";
+			}else{
+				##n = dllfunc("SETCURDIR", $$tags_dir);
+				$$opt_abs_path = "-a ";
+			}
+			if(1){
+				$$cmd = $g_exe_global + " " + $$opt_abs_path + $$cmd_arg + ">" + $$tmpfilename;
+				run $$cmd;
+				insertfile $$tmpfilename;
+			}else{
+				//検索中に描画する場合はこちらを使用する
+				//ただし、本マクロ中のdisabledraw/enabledrawをコメントアウトしないと表示されないので注意。
+				runex 	 $g_exe_global + " " + $$opt_abs_path + $$cmd_arg
+						,1
+						,0,""
+						,5,""
+						,5,""
+						,2,$$tags_dir
+						,2
+						,0
+						,0
+						;
+			}
+
+			call check_global_result;
+			if(0){
+				//GNU Globalの検索で何か見つかれば、すぐに終了する
+				if(##return){
+					break;
+				}
+			}
+		}
+
+		##tags_dir_index = 1 + ##tags_dir_index;
+	}
+
+	##n = dllfunc("SETCURDIR", $$cur_dir);
+	return ;
+
+
+/*	global の結果を調べる
+*/
+check_global_result:
+	if(linecount2<=1){
+		//空ファイル
+		return false;
+	}
+
+	##old_x = x;
+	##old_y = y;
+	gofiletop;
+	beginsel;
+	golineend;
+	endsel;
+	$$text = gettext(seltopx, seltopy, selendx, selendy);
+	$$text = tolower($$text);
+
+	##ret = true;
+	if($$text == $g_gtags_not_found){
+		##ret = false;
+	}
+	moveto ##old_x, ##old_y;
+	return ##ret;
+
