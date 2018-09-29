@@ -5,35 +5,39 @@ C/C++で「関数が呼ばれている位置」を一覧表示することが出
   ctags      関数が定義されている位置。
   GNU GLOBAL 関数が呼ばれている位置。
 
-### このマクロの特徴
+# このマクロの特徴
 - メニューからglobalの動作を選択します。
 - 検索結果は秀丸のgrepと同じ形式で出力するのでタグジャンプが可能です。
 
-### マクロのインストールと環境設定
+# マクロのインストールと環境設定
+## ステップ1
 全ファイルを秀丸のスクリプトディレクトリにコピーしてください。
 
-＊gtags_config.iniの設定を行って下さい
-    ・GNU GLOBALへのパスを設定します。
-        (例)
-        >global=C:\glo593wb\bin\global.exe
-        >gtags=C:\glo593wb\bin\gtags.exe
+## ステップ2
+gtags_config.ini ファイルをテキストエディタで開いて設定を行って下さい
+```
+;各自の環境に合わせてGNU GLOBALへのパスを設定して下さい
+global=C:\glo593wb\bin\global.exe
+gtags=C:\glo593wb\bin\gtags.exe
+```
+詳細はファイル中のコメントを参照して下さい。
 
-＊複数パス、複数ドライブから検索したい場合
-    gtags_config.iniのSearchセクションを編集してください。
-    開発中のアプリとライブラリが別ドライブにあるときに使うと便利です。
+### タグファイルを複数のフォルダから検索したい場合は？
+gtags_config.iniの`Searchセクション`を編集してください、開発中のアプリとライブラリが別フォルダ・別ドライブにあるときに使うと便利です。
 
-### ファイル構成
+# ファイル構成
 |ファイル名|説明|
 |:---|:---|
 |doc/readme.pdf|使い方の詳細です|
-|gtags_jump.mac|マクロ本体|
-|gtags_wrapper.mac|おまけマクロ|
+|gtags_jump.mac|タグジャンプを行うマクロ（マクロ本体）|
+|gtags_wrapper.mac|タグファイルの作成を補助するマクロ（おまけマクロ）|
 |gtags_config.ini|設定ファイル|
 
-### 動作環境
+# 動作環境
 - 秀丸エディタ ver8以降
 - でんがくDLL
 
-### 連絡先
-http://d.hatena.ne.jp/ohtorii/
-https://twitter.com/ohtorii
+# 連絡先
+<http://d.hatena.ne.jp/ohtorii/>
+
+<https://twitter.com/ohtorii>
