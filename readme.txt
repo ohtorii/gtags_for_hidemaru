@@ -14,7 +14,14 @@ C/C++で「関数が呼ばれている位置」を一覧表示することが出
   でんがくDLL
 
 【ファイル構成】
-  gtags_jump.mac    マクロ本体
-  gtags_wrapper.mac おまけマクロ
+  gtags_jump.mac    gtagsでジャンプするマクロ（本体のマクロ）
+  gtags_wrapper.mac タグファイルの作成を補助するマクロ（おまけのマクロ）
   gtags_config.ini  設定ファイル
 
+【更新履歴】
+＊2018/09/28 ver1.1.0
+	後で書く
+＊2011/05/21 ver1.0.0
+	公開
+
+以上
