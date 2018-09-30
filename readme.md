@@ -1,17 +1,23 @@
 GNU GLOBAL を秀丸エディタで使用するためのマクロ
 =============
+gtags_jump.mac<br>
 ![example](https://github.com/ohtorii/gtags_for_hidemaru/blob/master/gtags_jump.png)
+
+gtags_wrapper.mac (おまけのマクロ)<br>
 ![example](https://github.com/ohtorii/gtags_for_hidemaru/blob/master/gtags_wrapper.png)
 
-C/C++で「関数が呼ばれている位置」を一覧表示することが出来ます。「定義されている位置」ではなく「呼ばれている位置」です。
+# このマクロの特徴
+gtagsの対応言語で「関数・変数が呼ばれているソースコード位置」を一覧表示することが出来ます。<br>
+`定義されている位置`ではなく`呼ばれている位置`です。
 
 |プログラム|機能|
 |:---|:---|
-|ctags|関数が定義されている位置|
 |GNU GLOBAL|関数が呼ばれている位置|
+|ctags|関数が定義されている位置|
 
-# このマクロの特徴
-- メニューからglobalの動作を選択します。
+### 動作イメージ
+- カーソルを調べたい単語の上に置いてから`gtags_jump.mac`マクロを実行するとメニューが開きます。
+- メニューからgtagsの動作を選択します。
 - 検索結果は秀丸のgrepと同じ形式で出力するので、秀丸エディタの標準機能を使ってタグジャンプが可能です。
 
 # マクロのインストール
