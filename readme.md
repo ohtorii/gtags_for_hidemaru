@@ -1,7 +1,7 @@
 GNU GLOBAL を秀丸エディタで使用するためのマクロ
 =============
 gtags_jump.mac<br>
-![example](https://github.com/ohtorii/gtags_for_hidemaru/blob/master/gtags_jump.png)
+![example](https://github.com/ohtorii/gtags_for_hidemaru/blob/master/gtags.gif)
 
 gtags_wrapper.mac (おまけのマクロ)<br>
 ![example](https://github.com/ohtorii/gtags_for_hidemaru/blob/master/gtags_wrapper.png)
