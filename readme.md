@@ -1,6 +1,7 @@
 GNU GLOBAL を秀丸エディタで使用するためのマクロ
 =============
-![example](https://github.com/ohtorii/gtags_for_hidemaru/blob/master/hidemaru.png)
+![example](https://github.com/ohtorii/gtags_for_hidemaru/blob/master/gtags_jump.png)
+![example](https://github.com/ohtorii/gtags_for_hidemaru/blob/master/gtags_wrapper.png)
 
 C/C++で「関数が呼ばれている位置」を一覧表示することが出来ます。「定義されている位置」ではなく「呼ばれている位置」です。
 
