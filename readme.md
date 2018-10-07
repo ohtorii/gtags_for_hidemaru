@@ -1,10 +1,10 @@
 GNU GLOBAL を秀丸エディタで使用するためのマクロ
 =============
-gtags_jump.mac<br>
-![example](https://github.com/ohtorii/gtags_for_hidemaru/blob/master/gtags.gif)
+gtags_jump.mac（タグジャンプを行う本体マクロ）<br>
+![example](gtags_jump.gif)
 
-gtags_wrapper.mac (おまけのマクロ)<br>
-![example](https://github.com/ohtorii/gtags_for_hidemaru/blob/master/gtags_wrapper.png)
+gtags_wrapper.mac (タグファイル生成をサポートするおまけマクロ)<br>
+![example](gtags_wrapper.gif)
 
 # このマクロの特徴
 gtagsの対応言語で「関数・変数が呼ばれているソースコード位置」を一覧表示することが出来ます。<br>
@@ -58,5 +58,5 @@ gtags_wrapper.macの改良
 公開
   
 # 連絡先
-<http://d.hatena.ne.jp/ohtorii/>　<br>
+<http://d.hatena.ne.jp/ohtorii/> <br>
 <https://twitter.com/ohtorii>
