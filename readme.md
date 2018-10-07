@@ -1,9 +1,9 @@
 GNU GLOBAL を秀丸エディタで使用するためのマクロ
 =============
-gtags_jump.mac（タグジャンプを行う本体マクロ）<br>
+### gtags_jump.mac（タグジャンプを行う本体マクロ）<br>
 ![example](gtags_jump.gif)
 
-gtags_wrapper.mac (タグファイル生成をサポートするおまけマクロ)<br>
+### gtags_wrapper.mac (タグファイル生成をサポートするおまけマクロ)<br>
 ![example](gtags_wrapper.gif)
 
 # このマクロの特徴
