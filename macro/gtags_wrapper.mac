@@ -34,11 +34,12 @@ https://twitter.com/ohtorii
 */
 
 //バージョン番号
-$g_version = "version 1.1.0(2018/09/29)";
+$g_version = "version 1.2.0(2018/10/07)";
 
 $dengaku_dll = hidemarudir + "\\DengakuDLL.dll";
 //(.ini)のファイル名
-$g_ini_filename = "gtags_config.ini";
+$g_ini_filename 	= "gtags_config.ini";
+$g_ini_abs_filename = "";
 
 //gtags.exe へのパス。(.ini)ファイルを解析後に設定される。
 $g_exe_global 	= "";
@@ -49,6 +50,10 @@ $g_param_dir		= directory2;
 //gtagsの引数
 $g_param_arg		= "-v";
 
+//ユーザーがダイアログに入力した文字列
+$g_dialog_dir	= "";
+$g_dialog_param	= "";
+
 
 
 call Main;
@@ -56,7 +61,7 @@ endmacro;
 
 
 Main:
-	call proc_gtag_ini;
+	call read_gtag_ini;
 	if(! ##return){
 		return false;
 	}
@@ -67,14 +72,18 @@ Main:
 		      + "DengakuDLL.dllが秀丸のディレクトリに存在するか確認してください";
 		return false;
 	}
-	call run_gtags;
-	##result = ##return;
+	call show_dialog;
+	##dialog_result=##return;
 	freedll;
-	return ##result;
+	if(! ##dialog_result){
+		return ##dialog_result;
+	}
+	call update_gtag_ini;
+	call run_gtags;
+	return ##return;
 
 
-run_gtags:
-	// ダイアログの作成
+show_dialog:
 	if (dllfunc("NEWDIALOG", "[GTAGS] タグファイルの作成 " + $g_version, 128) == 0 ||
 		dllfunc("NEWCONTROL", "text", "", "フォルダ") == 0 ||
 		dllfunc("SETCTRLWIDTH", "", 8) == 0 ||
@@ -99,6 +108,7 @@ run_gtags:
 	// ダイアログの表示
 	##n = dllfunc("SHOWDIALOG", 0, 0);
 	while (1) {
+message_loop:
 		$$item = "";
 		while ($$item == "") {
 			 $$item = dllfuncstr("WAITCTRLNOTIFY",10);
@@ -122,43 +132,53 @@ run_gtags:
 		return false;
 	}
 
-	$$SelectDir = dllfuncstr("GETCTRLSTRING", "CTagsDlg@Dir");
-	$$SetParam = dllfuncstr("GETCTRLSTRING", "CTagsDlg@Param");
+	$g_dialog_dir 	= dllfuncstr("GETCTRLSTRING", "CTagsDlg@Dir");
+	if(existfile($g_dialog_dir, 1)&0x10 != 0x10){
+		message("フォルダが見つかりません\n"	+
+				"【見つからないフォルダ】\n"+
+				$g_dialog_dir + "\n" +
+				"【対応方法】\n"+
+				"存在するディレクトリを入力して下さい\n"
+		);
+		goto message_loop;
+	}
+	
+	$g_dialog_param = dllfuncstr("GETCTRLSTRING", "CTagsDlg@Param");
 	##n = dllfunc("ENDDIALOG");
-	
-	//
+	return true;
+
+run_gtags:
 	// gtagsの実行
-	//
-	
-	$$run_str = "\""+ $g_exe_global + "\" " + $$SetParam;
+	$$run_str = "\""+ $g_exe_global + "\" " + $g_dialog_param;
 	runex $$run_str
-			, 1 	//sync	 0:async, 1:sync
+			, 0 	//sync	 0:async, 1:sync
 			, 0, "" //stdin  0:none, 1:auto, 2:<file, 3:(reserved),
 					//		 4:current content, 5:selection
 			, 7, "" //stdout 0:none, 1:auto, 2:>file 3:>>file, 4:new window,
 					//		 5:insert, 6:replace, 7:>output pane, 8:>>output pane
 			, 7, "" //stderr 0:none, 1:auto or >>stdout, 2-8:same as stdout's param
-			, 2, $$SelectDir //folder 0:none, 1:current, 2:specify 3:(reserved), 4:exe's
+			, 2, $g_dialog_dir //folder 0:none, 1:current, 2:specify 3:(reserved), 4:exe's
 			, 2 	//show	 0:auto, 1:show, 2:hide, 3-13:ShellExecute()'s SW_*
 			, 0 	//draw	 0:draw, 1:no draw when stdout redirected
 			, 0 	//encode 0:ansi, 2:utf-16, 6:utf-8
 			, 0 	//extended flags
 		;
 	
-	$$abs_filename = currentmacrodirectory + "\\" + $g_ini_filename;
-	writeinistr $$abs_filename, "Dialog", "dir", $$SelectDir;
-	writeinistr $$abs_filename, "Dialog", "arg", $$SetParam;
+	//
+	//memo: 「非同期実行かつアウトプット枠へ出力」なのでrunex文を実行した直後にマクロは終了します。
+	//
+	
 	return ;
 
 
-proc_gtag_ini:
-	$$abs_filename = currentmacrodirectory + "\\" + $g_ini_filename;
-	if(! existfile($$abs_filename)){
-		message($$abs_filename + " が見つかりません");
+read_gtag_ini:
+	$g_ini_abs_filename = currentmacrodirectory + "\\" + $g_ini_filename;
+	if(! existfile($g_ini_abs_filename)){
+		message($g_ini_abs_filename + " が見つかりません");
 		return false;
 	}
 
-	$g_exe_global = getinistr($$abs_filename, "Path", "gtags");
+	$g_exe_global = getinistr($g_ini_abs_filename, "Path", "gtags");
 	if(! existfile($g_exe_global)){
 		message($g_ini_filename + " ファイルの設定エラー\n\n" +
 				"【詳細】\n"+
@@ -166,12 +186,17 @@ proc_gtag_ini:
 				"セクションの値=" + $g_exe_global + "\n\n"+
 				"【対応方法】\n"+
 				"以下設定ファイルの ”[Path]->gtags セクション” に正しいファイルパスを記述して下さい。\n" +
-				$$abs_filename
+				$g_ini_abs_filename
 				
 		);
 		return false;
 	}
 
-	$g_param_dir = getinistr($$abs_filename, "Dialog", "dir");
-	$g_param_arg = getinistr($$abs_filename, "Dialog", "arg");
+	$g_param_dir = getinistr($g_ini_abs_filename, "Dialog", "dir");
+	$g_param_arg = getinistr($g_ini_abs_filename, "Dialog", "arg");
+	return true;
+
+update_gtag_ini:
+	writeinistr $g_ini_abs_filename, "Dialog", "dir", $g_dialog_dir;
+	writeinistr $g_ini_abs_filename, "Dialog", "arg", $g_dialog_param;
 	return true;
