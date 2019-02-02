@@ -61,7 +61,18 @@ gtags_wrapper.macの改良
 - ダイアログのタイトルにバージョン番号を追加した。
 ### 2011/05/21 ver 1.0.0
 公開
-  
+
+
+# ダウンロード
+
+こちらから動作確認済みのアーカイブをダウンロードして下さい。<br>
+https://github.com/ohtorii/gtags_for_hidemaru/releases
+
+*注意*
+masterブランチを取得しても多分動作しないです。<br>
+一人で開発しているのでブランチを作らずに気楽に開発してます。（仕事じゃないしね😉）
+
+
 # 連絡先
 <http://d.hatena.ne.jp/ohtorii/> <br>
 <https://twitter.com/ohtorii>
