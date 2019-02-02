@@ -75,4 +75,5 @@ masterブランチを取得しても多分動作しないです。<br>
 
 # 連絡先
 <http://d.hatena.ne.jp/ohtorii/> <br>
-<https://twitter.com/ohtorii>
+<https://twitter.com/ohtorii> <br>
+<https://github.com/ohtorii/gtags_for_hidemaru>
