@@ -66,10 +66,6 @@ https://twitter.com/ohtorii
 //(.ini)のファイル名
 $g_ini_filename = "gtags_config.ini";
 
-//「でんがくDLL」へのパス
-$dengaku_dll = hidemarudir + "\\DengakuDLL.dll";
-
-
 
 /////////////////////////////////////////////////////////////////////////////
 //	メイン処理
@@ -172,6 +168,17 @@ Main:
 
 	return true;
 
+LoadDengaku:
+	loaddll macrodir + "\\DengakuDLL.dll";
+	if (result) {
+		return true;
+	}
+	loaddll hidemarudir + "\\DengakuDLL.dll";
+	if (result) {
+		return true;
+	}
+	message "田楽DLLのロードに失敗しました\n" + "DengakuDLL.dllが秀丸マクロディレクトリに存在するか確認してください";
+	return false;
 
 
 //-f オプション
@@ -255,10 +262,8 @@ global_raw:
 	newfile;
 
 	if(##retry_other_tags){
-		loaddll $dengaku_dll;
-		if (!result) {
-			message "田楽DLLのロードに失敗しました\n"
-		    	  + "DengakuDLL.dllが秀丸のディレクトリに存在するか確認してください";
+		call LoadDengaku;
+		if (!##return) {
 			return false;
 		}
 	}
