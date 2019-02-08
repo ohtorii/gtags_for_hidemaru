@@ -1,55 +1,55 @@
-/*�^�O�t�@�C���̍쐬��⏕����}�N��
+﻿/*タグファイルの作成を補助するマクロ
 
-�_�C�A���O�̐ݒ�Ɋ�Â���gtags�v���O�������Ăяo���⏕�}�N���ł��B
+ダイアログの設定に基づいてgtagsプログラムを呼び出す補助マクロです。
 
 
 ============================================================
-�N�����@
+起動方法
 ============================================================
-�G�ۂ́u�}�N�����s�v���� gtags_wrapper.mac ���N�����Ă��������B
+秀丸の「マクロ実行」から gtags_wrapper.mac を起動してください。
 
-    �Ⴆ�΁A�\�[�X�R�[�h�̃t�H���_���ȉ��\���̎��́A
+    例えば、ソースコードのフォルダが以下構成の時は、
         c:\my_app
-        ����inc
-        ����src
-        ����doc
+        ├─inc
+        ├─src
+        └─doc
 
-    �_�C�A���O��́u�t�H���_�v�� c:\my_app ��ݒ肵�Ă��������B
-    �u�n�j�{�^���v�������ƁAgtags���N������ c:\my_app �t�H���_��
-    �^�O�t�@�C������������܂��B
-
-
-============================================================
-�����
-============================================================
-�E�G�� ver8�ȍ~
-�E�ł񂪂�DLL
+    ダイアログ上の「フォルダ」に c:\my_app を設定してください。
+    「ＯＫボタン」を押すと、gtagsが起動して c:\my_app フォルダに
+    タグファイルが生成されます。
 
 
 ============================================================
-�A����
+動作環境
+============================================================
+・秀丸 ver8以降
+・でんがくDLL
+
+
+============================================================
+連絡先
 ============================================================
 http://d.hatena.ne.jp/ohtorii/
 https://twitter.com/ohtorii
 */
 
-//�o�[�W�����ԍ�
+//バージョン番号
 $g_version = "version 1.2.0(2018/10/07)";
 
-//(.ini)�̃t�@�C����
+//(.ini)のファイル名
 $g_ini_filename 	= "gtags_config.ini";
 $g_ini_abs_filename = "";
 
-//gtags.exe �ւ̃p�X�B(.ini)�t�@�C������͌�ɐݒ肳���B
+//gtags.exe へのパス。(.ini)ファイルを解析後に設定される。
 $g_exe_global 	= "";
 
-//gtags�̑ΏۂƂȂ�f�B���N�g��(directory2=�f�t�H���g�l)
+//gtagsの対象となるディレクトリ(directory2=デフォルト値)
 $g_param_dir		= directory2;
 
-//gtags�̈���
+//gtagsの引数
 $g_param_arg		= "-v";
 
-//���[�U�[���_�C�A���O�ɓ��͂���������
+//ユーザーがダイアログに入力した文字列
 $g_dialog_dir	= "";
 $g_dialog_param	= "";
 
@@ -67,8 +67,8 @@ Main:
 
 	call LoadDengaku;
 	if (!##return) {
-		message "�c�yDLL�̃��[�h�Ɏ��s���܂���\n"
-		      + "DengakuDLL.dll���G�ۂ̃f�B���N�g���ɑ��݂��邩�m�F���Ă�������";
+		message "田楽DLLのロードに失敗しました\n"
+		      + "DengakuDLL.dllが秀丸のディレクトリに存在するか確認してください";
 		return false;
 	}
 	call show_dialog;
@@ -90,32 +90,32 @@ LoadDengaku:
 	if (result) {
 		return true;
 	}
-	message "�c�yDLL�̃��[�h�Ɏ��s���܂���\n" + "DengakuDLL.dll���G�ۃ}�N���f�B���N�g���ɑ��݂��邩�m�F���Ă�������";
+	message "田楽DLLのロードに失敗しました\n" + "DengakuDLL.dllが秀丸マクロディレクトリに存在するか確認してください";
 	return false;
 	
 show_dialog:
-	if (dllfunc("NEWDIALOG", "[GTAGS] �^�O�t�@�C���̍쐬 " + $g_version, 128) == 0 ||
-		dllfunc("NEWCONTROL", "text", "", "�t�H���_") == 0 ||
+	if (dllfunc("NEWDIALOG", "[GTAGS] タグファイルの作成 " + $g_version, 128) == 0 ||
+		dllfunc("NEWCONTROL", "text", "", "フォルダ") == 0 ||
 		dllfunc("SETCTRLWIDTH", "", 8) == 0 ||
 		dllfunc("NEWCONTROL", "edit", "CTagsDlg@Dir", $g_param_dir) == 0 ||
 		dllfunc("SETCTRLWIDTH", "", 80) == 0 ||
 		dllfunc("NEWCONTROL", "refdirbutton", "CTagsDlg@Ref", "") == 0 ||
-		dllfunc("SETCTRLITEM", "", "�t�H���_�̑I��, \"\", 0") == 0 ||
+		dllfunc("SETCTRLITEM", "", "フォルダの選択, \"\", 0") == 0 ||
 		dllfunc("SETCTRLNOTIFY", "", "10") == 0 ||
 		
 		dllfunc("SETCTRLWIDTH", "", 8) == 0 ||
-		dllfunc("NEWCONTROL", "button", "CTagsDlg@SetCurDir", "�����݂̃t�H���_��ݒ肷��") == 0 ||
+		dllfunc("NEWCONTROL", "button", "CTagsDlg@SetCurDir", "←現在のフォルダを設定する") == 0 ||
 		dllfunc("SETCTRLNOTIFY", "", "20") == 0 ||
 		
-		dllfunc("NEWCONTROL", "text", "", "����") == 0 ||
+		dllfunc("NEWCONTROL", "text", "", "引数") == 0 ||
 		dllfunc("SETCTRLWIDTH", "", 8) == 0 ||
 		dllfunc("NEWCONTROL", "edit", "CTagsDlg@Param", $g_param_arg) == 0 ||
 		dllfunc("NEWCONTROL", "okcancel", "CTagsDlg@OkCancel", "") == 0) {
-		message "�_�C�A���O�̍쐬�Ɏ��s���܂���\n";
+		message "ダイアログの作成に失敗しました\n";
 		return false;
 	}
 
-	// �_�C�A���O�̕\��
+	// ダイアログの表示
 	##n = dllfunc("SHOWDIALOG", 0, 0);
 	while (1) {
 message_loop:
@@ -129,10 +129,10 @@ message_loop:
 		else if ($$item == "1") {
 			break;
 		}
-		else if ($$item == "10") {	// �Q�ƃ{�^��
+		else if ($$item == "10") {	// 参照ボタン
 			##n = dllfunc("SETCTRLSTRING", "CTagsDlg@Dir", dllfuncstr("GETCTRLSTRING", "CTagsDlg@Ref"));
 		}
-		else if ($$item == "20") {	// ���݂̃t�H���_��ݒ肷��{�^��
+		else if ($$item == "20") {	// 現在のフォルダを設定するボタン
 			##n = dllfunc("SETCTRLSTRING", "CTagsDlg@Dir", directory2);
 		}
 	}
@@ -144,11 +144,11 @@ message_loop:
 
 	$g_dialog_dir 	= dllfuncstr("GETCTRLSTRING", "CTagsDlg@Dir");
 	if(existfile($g_dialog_dir, 1)&0x10 != 0x10){
-		message("�t�H���_��������܂���\n"	+
-				"�y������Ȃ��t�H���_�z\n"+
+		message("フォルダが見つかりません\n"	+
+				"【見つからないフォルダ】\n"+
 				$g_dialog_dir + "\n" +
-				"�y�Ή����@�z\n"+
-				"���݂���f�B���N�g������͂��ĉ�����\n"
+				"【対応方法】\n"+
+				"存在するディレクトリを入力して下さい\n"
 		);
 		goto message_loop;
 	}
@@ -158,7 +158,7 @@ message_loop:
 	return true;
 
 run_gtags:
-	// gtags�̎��s
+	// gtagsの実行
 	$$run_str = "\""+ $g_exe_global + "\" " + $g_dialog_param;
 	runex $$run_str
 			, 0 	//sync	 0:async, 1:sync
@@ -175,7 +175,7 @@ run_gtags:
 		;
 	
 	//
-	//memo: �u�񓯊����s���A�E�g�v�b�g�g�֏o�́v�Ȃ̂�runex�������s��������Ƀ}�N���͏I�����܂��B
+	//memo: 「非同期実行かつアウトプット枠へ出力」なのでrunex文を実行した直後にマクロは終了します。
 	//
 	
 	return ;
@@ -184,18 +184,18 @@ run_gtags:
 read_gtag_ini:
 	$g_ini_abs_filename = currentmacrodirectory + "\\" + $g_ini_filename;
 	if(! existfile($g_ini_abs_filename)){
-		message($g_ini_abs_filename + " ��������܂���");
+		message($g_ini_abs_filename + " が見つかりません");
 		return false;
 	}
 
 	$g_exe_global = getinistr($g_ini_abs_filename, "Path", "gtags");
 	if(! existfile($g_exe_global)){
-		message($g_ini_filename + " �t�@�C���̐ݒ�G���[\n\n" +
-				"�y�ڍׁz\n"+
-				"[Path]->gtags �Z�N�V�����Ɏw�肵�����s�t�@�C����������܂���B\n" +
-				"�Z�N�V�����̒l=" + $g_exe_global + "\n\n"+
-				"�y�Ή����@�z\n"+
-				"�ȉ��ݒ�t�@�C���� �h[Path]->gtags �Z�N�V�����h �ɐ������t�@�C���p�X���L�q���ĉ������B\n" +
+		message($g_ini_filename + " ファイルの設定エラー\n\n" +
+				"【詳細】\n"+
+				"[Path]->gtags セクションに指定した実行ファイルが見つかりません。\n" +
+				"セクションの値=" + $g_exe_global + "\n\n"+
+				"【対応方法】\n"+
+				"以下設定ファイルの ”[Path]->gtags セクション” に正しいファイルパスを記述して下さい。\n" +
 				$g_ini_abs_filename
 				
 		);
