@@ -36,7 +36,6 @@ https://twitter.com/ohtorii
 //バージョン番号
 $g_version = "version 1.2.0(2018/10/07)";
 
-$dengaku_dll = hidemarudir + "\\DengakuDLL.dll";
 //(.ini)のファイル名
 $g_ini_filename 	= "gtags_config.ini";
 $g_ini_abs_filename = "";
@@ -66,8 +65,8 @@ Main:
 		return false;
 	}
 
-	loaddll $dengaku_dll;
-	if (!result) {
+	call LoadDengaku;
+	if (!##return) {
 		message "田楽DLLのロードに失敗しました\n"
 		      + "DengakuDLL.dllが秀丸のディレクトリに存在するか確認してください";
 		return false;
@@ -82,7 +81,18 @@ Main:
 	call run_gtags;
 	return ##return;
 
-
+LoadDengaku:
+	loaddll macrodir + "\\DengakuDLL.dll";
+	if (result) {
+		return true;
+	}
+	loaddll hidemarudir + "\\DengakuDLL.dll";
+	if (result) {
+		return true;
+	}
+	message "田楽DLLのロードに失敗しました\n" + "DengakuDLL.dllが秀丸マクロディレクトリに存在するか確認してください";
+	return false;
+	
 show_dialog:
 	if (dllfunc("NEWDIALOG", "[GTAGS] タグファイルの作成 " + $g_version, 128) == 0 ||
 		dllfunc("NEWCONTROL", "text", "", "フォルダ") == 0 ||
