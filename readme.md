@@ -1,5 +1,9 @@
 ﻿# GNU GLOBAL を秀丸エディタで使用するためのマクロ
 
+![GitHub release](https://img.shields.io/github/release/ohtorii/gtags_for_hidemaru.svg)
+![Maintenance](https://img.shields.io/maintenance/yes/2020.svg)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 # このマクロの特徴
 
 このマクロは[GNU GLOBAL(gtags)](https://www.tamacom.com/global-j.html)を使用して「関数・変数が呼ばれているソースコード位置」を秀丸エディタで一覧表示することが出来ます。
