@@ -10,6 +10,8 @@ https://twitter.com/ohtorii
 
 //(.ini)のファイル名
 $g_ini_filename = "gtags_config.ini";
+//環境変数を展開する秀丸マクロ
+$g_expand_environment_strings=currentmacrodirectory+@"\internal\expand_environment_strings.mac";
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -308,7 +310,6 @@ del_temp_file:
 		run "cmd /c del \"" + $$tmp_filename + "\" >nul";
 	}
 
-
 proc_gtag_ini:
 	$$abs_filename = currentmacrodirectory + "\\" + $g_ini_filename;
 	if(! existfile($$abs_filename)){
@@ -316,11 +317,14 @@ proc_gtag_ini:
 		return false;
 	}
 
-	$g_exe_global = getinistr($$abs_filename, "Path", "global");
+    $$exe_global_ini = getinistr($$abs_filename, "Path", "global");
+    execmacro $g_expand_environment_strings, $$exe_global_ini;
+	$g_exe_global = getresultex(-1);
 	if(! existfile($g_exe_global)){
 		message($g_ini_filename + " の解析エラー\n" +
 				" [Path]->gtags が見つからないか、gtagsのexeが見つかりません\n" +
-				"exeの名前 : " + $g_exe_global
+				"exeの名前　　　　　　　　: " + $$exe_global_ini +"\n"+
+				"exeの名前(環境変数展開後): " + $g_exe_global    +"\n"
 		);
 		return false;
 	}
@@ -339,10 +343,14 @@ proc_gtag_ini:
 
 	##index = 0;
 	while(##index < #g_search_path_max_num){
-		$$Name 		= "Path" + str(##index);
-		$$PathStr 	= getinistr($$abs_filename, "Search", $$Name);
-		if(strlen($$PathStr)){
-			$g_search_path[1 + ##index] =  $$PathStr + "\\";
+		$$Name 		  = "Path" + str(##index);
+		$$PathStr_ini = getinistr($$abs_filename, "Search", $$Name);
+		if($$PathStr_ini != ""){
+    		execmacro $g_expand_environment_strings,$$PathStr_ini;
+    		$$PathStr 	= getresultex(-1);
+    		if($$PathStr != ""){
+    			$g_search_path[1 + ##index] =  $$PathStr + "\\";
+    		}
 		}
 		##index = ##index + 1;
 	}

@@ -10,11 +10,14 @@ https://twitter.com/ohtorii
 */
 
 //バージョン番号
-$g_version = "version 1.3.0(2019/02/09)";
+$g_version = "version 1.4.0(2022/01/09)";
 
 //(.ini)のファイル名
 $g_ini_filename 	= "gtags_config.ini";
 $g_ini_abs_filename = "";
+
+//環境変数を展開する秀丸マクロ
+$g_expand_environment_strings=currentmacrodirectory+@"\internal\expand_environment_strings.mac";
 
 //gtags.exe へのパス。(.ini)ファイルを解析後に設定される。
 $g_exe_global 	= "";
@@ -68,7 +71,7 @@ LoadDengaku:
 	}
 	message "田楽DLLのロードに失敗しました\n" + "DengakuDLL.dllが秀丸マクロディレクトリに存在するか確認してください";
 	return false;
-	
+
 show_dialog:
 	if (dllfunc("NEWDIALOG", "[GTAGS] タグファイルの作成 " + $g_version, 128) == 0 ||
 		dllfunc("NEWCONTROL", "text", "", "フォルダ") == 0 ||
@@ -78,11 +81,11 @@ show_dialog:
 		dllfunc("NEWCONTROL", "refdirbutton", "CTagsDlg@Ref", "") == 0 ||
 		dllfunc("SETCTRLITEM", "", "フォルダの選択, \"\", 0") == 0 ||
 		dllfunc("SETCTRLNOTIFY", "", "10") == 0 ||
-		
+
 		dllfunc("SETCTRLWIDTH", "", 8) == 0 ||
 		dllfunc("NEWCONTROL", "button", "CTagsDlg@SetCurDir", "←現在のフォルダを設定する") == 0 ||
 		dllfunc("SETCTRLNOTIFY", "", "20") == 0 ||
-		
+
 		dllfunc("NEWCONTROL", "text", "", "引数") == 0 ||
 		dllfunc("SETCTRLWIDTH", "", 8) == 0 ||
 		dllfunc("NEWCONTROL", "edit", "CTagsDlg@Param", $g_param_arg) == 0 ||
@@ -128,7 +131,7 @@ message_loop:
 		);
 		goto message_loop;
 	}
-	
+
 	$g_dialog_param = dllfuncstr("GETCTRLSTRING", "CTagsDlg@Param");
 	##n = dllfunc("ENDDIALOG");
 	return true;
@@ -149,11 +152,11 @@ run_gtags:
 			, 0 	//encode 0:ansi, 2:utf-16, 6:utf-8
 			, 0 	//extended flags
 		;
-	
+
 	//
 	//memo: 「非同期実行かつアウトプット枠へ出力」なのでrunex文を実行した直後にマクロは終了します。
 	//
-	
+
 	return ;
 
 
@@ -164,16 +167,20 @@ read_gtag_ini:
 		return false;
 	}
 
-	$g_exe_global = getinistr($g_ini_abs_filename, "Path", "gtags");
+    $$exe_global_ini=getinistr($g_ini_abs_filename, "Path", "gtags");
+	execmacro $g_expand_environment_strings, $$exe_global_ini;
+	$g_exe_global = getresultex(-1);
 	if(! existfile($g_exe_global)){
 		message($g_ini_filename + " ファイルの設定エラー\n\n" +
 				"【詳細】\n"+
 				"[Path]->gtags セクションに指定した実行ファイルが見つかりません。\n" +
-				"セクションの値=" + $g_exe_global + "\n\n"+
+				"セクションの値　　　　　　　　　=" + $$exe_global_ini  + "\n"+
+				"セクションの値（環境変数展開後）=" + $g_exe_global     + "\n"+
+				"\n" +
 				"【対応方法】\n"+
 				"以下設定ファイルの ”[Path]->gtags セクション” に正しいファイルパスを記述して下さい。\n" +
 				$g_ini_abs_filename
-				
+
 		);
 		return false;
 	}
