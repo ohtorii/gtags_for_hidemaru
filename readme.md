@@ -51,6 +51,60 @@
 
 同梱の`gtags_config.ini`ファイルを編集することで、各自の環境に応じたカスタマイズが可能です。
 
+```ini
+;
+; ShiftJIS
+;
+
+[Path]
+;===============================
+;win32
+;===============================
+;global,gtagsへのパス
+
+global=C:\glo662wb\bin\global.exe
+gtags=C:\glo662wb\bin\gtags.exe
+
+;global=C:\glo593wb\bin\global.exe
+;gtags=C:\glo593wb\bin\gtags.exe
+
+;環境変数が利用できます
+;global=%HOMEDRIVE%%HOMEPATH%\gtags\bin\global.exe
+;gtags=%HOMEDRIVE%%HOMEPATH%\gtags\bin\gtags.exe
+
+;===============================
+;MSYS2
+;===============================
+;global=C:\tools\msys64\usr\bin\global.exe
+;gtags=C:\tools\msys64\usr\bin\gtags
+
+;===============================
+;cygwin
+;===============================
+;gtags=C:\cygwin\usr\local\bin\global.exe
+;gtags=C:\cygwin\usr\local\bin\gtags.exe
+
+
+[Search]
+;親フォルダのタグファイルからジャンプ先が見つからない場合は、下記パスのタグファイルから再検索する
+;0-9まで指定可能（環境変数が利用できます）
+;Path0=D:\project\my_lib\trunk
+;Path1=K:\libs\boost\
+;Path2=%USERPROFILE%\my_lib
+
+[Dialog]
+;ダイアログに設定した値はマクロ終了後にこのセクションへ書き込まれます
+
+dir=C:\your_apps_folder
+arg=-v -w
+
+;ファイル生成に Exuberant Ctags を利用する。（詳細は各自で調べて下さい :-P）
+;arg=--gtagslabel=pygments
+
+;設定ファイルを指定する(環境変数が利用できます)
+;arg=--gtagsconf %HOMEDRIVE%%HOMEPATH%\gtags.conf
+```
+
 ## 必須のカスタマイズ
 
 各自の環境に合わせてGNU GLOBALの実行ファイルのパスを設定して下さい。
@@ -67,9 +121,9 @@ gtags_config.iniの`Searchセクション`を編集してください、開発�
 
 # 動作環境
 
-- 秀丸エディタ ver8以降
-- [田楽DLL](http://www.ceres.dti.ne.jp/~sugiura/)
-- [GNU GLOBAL 6.6.2](https://www.tamacom.com/global-j.html)
+- 秀丸エディタ ver8以降(32bit版、または、64bit版)
+- [田楽DLL 32bit](http://www.ceres.dti.ne.jp/~sugiura/hidemaru/macros/dgserver/#download64)、または、[田楽DLL 64bit](http://htom.in.coocan.jp/macro/macro_dll.html#label-5)
+- [GNU GLOBAL](https://www.tamacom.com/global-j.html)
 
 # バージョン番号のルール
 
@@ -98,6 +152,10 @@ masterブランチを取得しても多分動作しないです。<br>
 - [GNU GLOBAL(gtags)](https://www.tamacom.com/global-j.html)がコマンドプロンプトで動作するかどうかを確認して原因の切り分けを行って下さい。
 - コマンドプロンプトで期待したとおりに動作するように設定を済ませてからこのマクロを使用して下さい、。
 
+# 作者に感謝
+- [田楽DLL 32bit](http://www.ceres.dti.ne.jp/~sugiura/hidemaru/macros/dgserver/#download64)
+- [田楽DLL 64bit](http://htom.in.coocan.jp/macro/macro_dll.html#label-5)
+- [GNU GLOBAL](https://www.tamacom.com/global-j.html)
 
 # 連絡先
 <http://d.hatena.ne.jp/ohtorii/> <br>
