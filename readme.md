@@ -17,7 +17,7 @@
 
 ![example](images/gtags_jump.gif)
 
-## gtags_wrapper.mac (タグファイル生成をサポートするおまけマクロ)
+## gtags_wrapper.mac (タグファイル生成をサポートするGUIマクロ)
 
 ![example](images/gtags_wrapper.gif)
 
@@ -36,14 +36,14 @@
 	            └─gtags_wrapper.mac
 	
 - gtags_jump.mac マクロに任意のショートカットキーを割り当ててご使用下さい。
-- gtags_wrapper.mac は*おまけマクロ*です、後述の説明を読んで必要な方だけご使用下さい。
+- gtags_wrapper.mac は*おまけのマクロ*です、後述の説明を読んで必要な方だけご使用下さい。
 
 ## ファイル構成
 
 |ファイル名|説明|
 |:---|:---|
 |macro/gtags_jump.mac|タグジャンプを行うマクロ（マクロ本体）|
-|macro/gtags_wrapper.mac|タグファイルの作成を補助するマクロ（おまけマクロ）|
+|macro/gtags_wrapper.mac|タグファイルの作成を補助するGUIマクロ（おまけのマクロ）|
 |macro/gtags_config.ini|設定ファイル|
 |doc/readme.pdf|使い方の詳細です|
 
